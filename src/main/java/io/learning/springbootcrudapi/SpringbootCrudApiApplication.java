@@ -66,7 +66,9 @@ class CustomerNotFound extends RuntimeException {
 }
 
 interface CustomerRepository extends CrudRepository<Customer, Long> {
-	//check this documents for more information , How it works- https://docs.spring.io/spring-data/jpa/docs/2.5.6/reference/html/#reference
+	/*check this documents for more information , How it works and what are the possibilities like this
+	- https://docs.spring.io/spring-data/jpa/docs/2.5.6/reference/html/#reference
+	*/
 	Optional<Customer> findByIdAndName(Long id, String name);
 }
 
