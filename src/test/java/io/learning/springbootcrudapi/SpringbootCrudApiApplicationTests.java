@@ -1,7 +1,11 @@
 package io.learning.springbootcrudapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,38 +13,37 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
 @SpringBootTest
 class SpringbootCrudApiApplicationTests {
-
-	
 	
 }
 
 
-@SpringBootTest
-@DisplayName("Customer Service Test")
+@ExtendWith(SpringExtension.class)
+@DisplayName("CustomerService Test")
 class CustomerServiceTest {
 	
 	@MockBean
 	private CustomerRepository customerRepository;
 	
-	@Autowired
 	private CustomerService customerService;
 	
 	@BeforeEach
 	public void beforEach() {
+		customerService = new CustomerService(customerRepository);
+			
 		when(customerRepository.findById(1l)).thenReturn(
 				Optional.of(
 						Customer.builder().id(1l).name("John Smith").build())
 				);
 		
-		when(customerRepository.findById(anyLong())).thenReturn(
+		when(customerRepository.findById(2l)).thenReturn(
 				Optional.of(
 						Customer.builder().id(2l).name("Unknown Customer").build())
 				);
@@ -69,16 +72,18 @@ class CustomerServiceTest {
 	}
 	
 	@Test
-	@DisplayName("Check getById(1l) method should return a valid response")
-	public void getByIdValidTest() {
+	public void getByIdTest() {
 		assertThat(customerService.getById(1l)).isNotNull();
 		assertThat(customerService.getById(1l).getName()).isEqualTo("John Smith");
 	}
 	
 	@Test
-	@DisplayName("Check getById(5l) should throw CustomerNotFoundException")
-	public void getByIdInValidTest() {
-		assertThat(customerService.getById(5l)).isOfAnyClassIn(RuntimeException.class);
+	public void getByIdNotFoundExceptionTest() {
+		
+		assertThrows(CustomerNotFound.class, () -> {
+			customerService.getById(5l);
+		});		
+		
 	}
 }
 
