@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: springboot-crud-api
+  datasource:
+    url: jdbc:mssql://localhost:3306/springboot_crud_api
+    username: root
+    password: root

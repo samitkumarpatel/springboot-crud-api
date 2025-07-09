@@ -1,0 +1,44 @@
+@HOST=localhost:8080
+
+###
+GET {{HOST}}/customer
+
+###
+POST {{HOST}}/customer
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "",
+  "role": "Admin"
+}
+
+###
+GET {{HOST}}/customer/1
+
+###
+PUT {{HOST}}/customer/1
+Content-Type: application/json
+
+{
+  "name": "John Doe Updated",
+  "email": "",
+   "role": "Admin"
+}
+
+###
+PATCH {{HOST}}/customer/1
+Content-Type: application/json
+
+{
+  "name": "John Doe Patched"
+}
+
+###
+GET {{HOST}}/customer/1
+
+###
+DELETE {{HOST}}/customer/1
+
+###
+GET {{HOST}}/customer

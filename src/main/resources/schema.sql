@@ -1,0 +1,6 @@
+CREATE TABLE Customer (
+      id BIGINT IDENTITY PRIMARY KEY,
+      name NVARCHAR(255) NOT NULL,
+      email NVARCHAR(255) NOT NULL,
+      role NVARCHAR(255) NOT NULL
+);
