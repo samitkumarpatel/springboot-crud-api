@@ -2,6 +2,10 @@ spring:
   application:
     name: springboot-crud-api
   datasource:
-    url: jdbc:mssql://localhost:3306/springboot_crud_api
+    url: jdbc:sqlserver://localhost:32947;encrypt=false
     username: root
     password: root
+logging:
+  level:
+    org.springframework.data.jdbc: debug
+    sql: debug

@@ -12,7 +12,7 @@ class TestcontainersConfiguration {
 	@Bean
 	@ServiceConnection
 	MSSQLServerContainer<?> sqlServerContainer() {
-		return new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"))
+		return new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/azure-sql-edge").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
 				.withEnv("ACCEPT_EULA", "Y")
 				//.withEnv("SA_PASSWORD", "YourStrong@Passw0rd") // Use a strong password
 				.withExposedPorts(1433)

@@ -36,3 +36,13 @@ This repository also showcase How to write integration tests using Testcontainer
     http :8080/customer
 ```
 > Make sure to have `httpie` installed to run the above commands.
+
+Load multiple data from command line
+
+```shell
+for V in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;do http :8080/customer name=customer-$V email=customer.$V@test.net role=User;done
+
+
+for V in a b c d e f g h i j k l m n;do http :8080/customer name=customer-$V email=customer.$V@test.net role=User;done
+
+```

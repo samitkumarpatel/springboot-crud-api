@@ -2,6 +2,7 @@ package net.samitkumar.springboot_crud_api;
 
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
@@ -21,11 +23,14 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.List;
+
 import static java.util.Objects.nonNull;
 import static reactor.core.publisher.Mono.fromCallable;
 import static reactor.core.publisher.Mono.fromRunnable;
 
 @SpringBootApplication
+@Slf4j
 public class SpringbootCrudApiApplication {
 
 	public static void main(String[] args) {
@@ -51,12 +56,18 @@ public class SpringbootCrudApiApplication {
 				.route()
 				.path("/customer", builder -> builder
 						.GET("", customerService::allCustomer)
-						.GET("/{id}", customerService::customerById)
 						.POST("", customerService::newCustomer)
-						.PUT("/{id}", customerService::updateCustomer)
-						.PATCH("/{id}", customerService::patchCustomer)
-						.DELETE("/{id}", customerService::deleteCustomer)
+						.path("/{id}", subBuilder -> subBuilder
+								.GET("", customerService::customerById)
+								.PUT("", customerService::updateCustomer)
+								.PATCH("", customerService::patchCustomer)
+								.DELETE("", customerService::deleteCustomer)
+						)
 				)
+				.after((request, response) -> {
+					log.info("{} {} {}", request.method(), request.path(), response.statusCode());
+					return response;
+				})
 				.build();
 	}
 }
@@ -65,7 +76,9 @@ public class SpringbootCrudApiApplication {
 @Builder(toBuilder = true)
 record Customer(@Id Long id, String name, String email, String role) {}
 
-interface CustomerRepository extends ListCrudRepository<Customer, Long> {}
+interface CustomerRepository extends ListCrudRepository<Customer, Long> {
+	List<Customer> findCustomerByNameIsLikeIgnoreCaseOrEmailIsLikeIgnoreCaseOrRoleIsLikeIgnoreCase(String name, String email, String role);
+}
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class CustomerNotFoundException extends RuntimeException {
@@ -80,6 +93,10 @@ class CustomerService {
 	final CustomerRepository customerRepository;
 
 	public Mono<ServerResponse> allCustomer(ServerRequest request) {
+		var queryParam = request.queryParam("searchText").orElse(null);
+		if (nonNull(queryParam) && !queryParam.isBlank()) {
+			return searchCustomer(request);
+		}
 		return fromCallable(customerRepository::findAll)
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
@@ -131,5 +148,16 @@ class CustomerService {
 		return fromRunnable(() -> customerRepository.deleteById(id))
 				.subscribeOn(Schedulers.boundedElastic())
 				.then(ServerResponse.ok().build());
+	}
+
+	public Mono<ServerResponse> searchCustomer(ServerRequest request) {
+		var searchText = request.queryParam("searchText").orElse("");
+		return fromCallable(() -> customerRepository.findCustomerByNameIsLikeIgnoreCaseOrEmailIsLikeIgnoreCaseOrRoleIsLikeIgnoreCase(searchText, searchText, searchText))
+				.flatMap(customers -> ServerResponse.ok().bodyValue(
+						customers.stream()
+								.filter(customer -> customer.name().toLowerCase().contains(searchText.toLowerCase()))
+								.toList()
+				))
+				.subscribeOn(Schedulers.boundedElastic());
 	}
 }
