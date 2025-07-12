@@ -1,0 +1,23 @@
+name: Build and push Docker image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'oas/**'
+      - 'deployment/**'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  build:
+    uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
+    secrets: inherit
+    with:
+      build-jar: false
+      build-image: true
+      native-image: false
